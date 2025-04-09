@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}تعديل طلب{% else %}طلب جديد{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="mb-0">
+                <i class="fas fa-file-alt"></i> {% if form.instance.pk %}تعديل طلب{% else %}طلب جديد{% endif %}
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_supplier" class="form-label">المورد</label>
+                        {{ form.supplier }}
+                        {% if form.supplier.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.supplier.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label for="id_order_date" class="form-label">تاريخ الطلب</label>
+                        {{ form.order_date }}
+                        {% if form.order_date.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.order_date.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="id_notes" class="form-label">ملاحظات</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.notes.errors.0 }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <h4 class="mb-3">تفاصيل الطلب</h4>
+                {{ formset.management_form }}
+                <div id="formset-container">
+                    {% for form in formset %}
+                    <div class="card mb-3 formset-form">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label">المنتج</label>
+                                    {{ form.product }}
+                                    {% if form.product.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.product.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">الكمية</label>
+                                    {{ form.quantity }}
+                                    {% if form.quantity.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.quantity.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label">السعر</label>
+                                    {{ form.unit_price }}
+                                    {% if form.unit_price.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.unit_price.errors.0 }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="col-md-2 mb-3 d-flex align-items-end">
+                                    {% if form.instance.pk %}
+                                    {{ form.DELETE }}
+                                    <label class="form-check-label ms-2">حذف</label>
+                                    {% endif %}
+                                    {{ form.id }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <button type="button" class="btn btn-secondary" id="add-form">
+                        <i class="fas fa-plus"></i> إضافة منتج
+                    </button>
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{% url 'purchase_order_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-right"></i> رجوع
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> حفظ
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const formsetContainer = document.getElementById('formset-container');
+    const addButton = document.getElementById('add-form');
+    const totalForms = document.getElementById('id_form-TOTAL_FORMS');
+    let formCount = parseInt(totalForms.value);
+
+    addButton.addEventListener('click', function() {
+        const newForm = formsetContainer.children[0].cloneNode(true);
+        const formRegex = RegExp(`form-(\\d+)-`,'g');
+        
+        formCount++;
+        newForm.innerHTML = newForm.innerHTML.replace(formRegex, `form-${formCount}-`);
+        formsetContainer.appendChild(newForm);
+        totalForms.value = formCount;
+    });
+});
+</script>
+{% endblock %}
+{% endblock %} 

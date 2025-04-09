@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل المنتج - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if product.image %}
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}" 
+                         class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
+                    {% else %}
+                    <img src="{% static 'images/default_product.png' %}" alt="بدون صورة"
+                         class="img-fluid rounded" style="max-height: 300px; object-fit: cover;">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">
+                        <i class="fas fa-box"></i> {{ product.name }}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5 class="text-muted">الوصف</h5>
+                            <p>{{ product.description }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-muted">التفاصيل</h5>
+                            <ul class="list-unstyled">
+                                <li class="mb-2">
+                                    <i class="fas fa-tag"></i> السعر: {{ product.price }} ريال
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-boxes"></i> الكمية المتوفرة: {{ product.quantity }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-exclamation-triangle"></i> الحد الأدنى: {{ product.minimum_stock }}
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-calendar"></i> تاريخ الإضافة: {{ product.created_at|date:"Y/m/d" }}
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5 class="text-muted">حركات المخزون الأخيرة</h5>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>التاريخ</th>
+                                        <th>نوع الحركة</th>
+                                        <th>الكمية</th>
+                                        <th>الرصيد</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for transaction in recent_transactions %}
+                                    <tr>
+                                        <td>{{ transaction.created_at|date:"Y/m/d" }}</td>
+                                        <td>
+                                            <span class="badge {% if transaction.transaction_type == 'purchase' %}bg-success
+                                                              {% elif transaction.transaction_type == 'sale' %}bg-danger
+                                                              {% else %}bg-warning{% endif %}">
+                                                {{ transaction.get_transaction_type_display }}
+                                            </span>
+                                        </td>
+                                        <td>{{ transaction.quantity }}</td>
+                                        <td>{{ transaction.balance_after }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">لا توجد حركات مخزون</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'product_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-right"></i> رجوع
+                        </a>
+                        <div>
+                            <a href="{% url 'product_update' product.id %}" class="btn btn-primary">
+                                <i class="fas fa-edit"></i> تعديل
+                            </a>
+                            <a href="{% url 'product_delete' product.id %}" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> حذف
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

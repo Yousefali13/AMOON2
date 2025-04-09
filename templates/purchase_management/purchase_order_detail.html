@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}تفاصيل الطلب - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="mb-0">
+                <i class="fas fa-file-invoice"></i> تفاصيل الطلب - {{ order.order_number }}
+            </h2>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <h5 class="text-muted">معلومات الطلب</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-user"></i> المورد: {{ order.supplier.name }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-calendar"></i> تاريخ الطلب: {{ order.order_date|date:"Y/m/d" }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-info-circle"></i> الحالة: 
+                            <span class="badge {% if order.status == 'pending' %}bg-warning
+                                              {% elif order.status == 'approved' %}bg-success
+                                              {% else %}bg-danger{% endif %}">
+                                {{ order.get_status_display }}
+                            </span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h5 class="text-muted">المعلومات المالية</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-money-bill"></i> المبلغ الإجمالي: {{ order.total_amount }} ريال
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-percentage"></i> الضريبة: {{ order.tax_amount }} ريال
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-money-bill-wave"></i> المبلغ النهائي: {{ order.final_amount }} ريال
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <h5 class="text-muted">تفاصيل المنتجات</h5>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>المنتج</th>
+                                <th>الكمية</th>
+                                <th>سعر الوحدة</th>
+                                <th>المجموع</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in order.items.all %}
+                            <tr>
+                                <td>{{ item.product.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>{{ item.unit_price }} ريال</td>
+                                <td>{{ item.total_price }} ريال</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {% if order.notes %}
+            <div class="mb-4">
+                <h5 class="text-muted">ملاحظات</h5>
+                <p>{{ order.notes }}</p>
+            </div>
+            {% endif %}
+
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'order_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-right"></i> رجوع
+                </a>
+                <div>
+                    <a href="{% url 'purchase_order_update' order.id %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                    <a href="{% url 'purchase_order_delete' order.id %}" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> حذف
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
