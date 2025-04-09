@@ -1,0 +1,484 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <!-- قسم الصورة الشخصية -->
+    <div class="profile-header text-center mb-5">
+        <div class="profile-image-container">
+            <div class="profile-image-wrapper">
+                {% if user.profile_image %}
+                    <img src="{{ user.profile_image.url }}" class="profile-image" alt="صورة الملف الشخصي">
+                {% else %}
+                    <div class="profile-image-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+                <div class="profile-image-overlay">
+                    <label for="profile-image-input" class="btn btn-light btn-sm">
+                        <i class="fas fa-camera"></i> تغيير الصورة
+                    </label>
+                    <input type="file" id="profile-image-input" class="d-none" accept="image/*">
+                </div>
+            </div>
+            <h3 class="mt-3 mb-1">{{ user.get_full_name }}</h3>
+            <p class="text-muted mb-0">{{ user.job_title }}</p>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h2 class="fw-bold text-primary">
+            <i class="fas fa-user-tie me-2"></i>لوحة تحكم السيرة الذاتية
+        </h2>
+        {% if cv %}
+        <a href="{% url 'view_cv' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-eye me-1"></i> معاينة السيرة الذاتية
+        </a>
+        {% endif %}
+    </div>
+    
+    <div class="row g-4">
+        <!-- العمود الجانبي -->
+        <div class="col-md-4">
+            <!-- بطاقة إدارة السيرة الذاتية -->
+            <div class="card shadow-sm mb-4 border-0 hover-card">
+                <div class="card-header bg-gradient-primary text-white rounded-top">
+                    <h5 class="mb-0"><i class="fas fa-cogs me-2"></i>إدارة السيرة الذاتية</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% if cv %}
+                            <a href="{% url 'update_cv' %}" class="list-group-item list-group-item-action py-3">
+                                <i class="fas fa-edit text-primary me-2"></i> تعديل السيرة الذاتية
+                            </a>
+                        {% else %}
+                            <a href="{% url 'create_cv' %}" class="list-group-item list-group-item-action py-3">
+                                <i class="fas fa-plus-circle text-success me-2"></i> إنشاء سيرة ذاتية
+                            </a>
+                        {% endif %}
+                     
+                        {% if cv %}
+                        <a href="#" class="list-group-item list-group-item-action py-3" data-bs-toggle="modal" data-bs-target="#exportModal">
+                            <i class="fas fa-file-export text-danger me-2"></i> تصدير السيرة الذاتية
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- بطاقة التقدم -->
+            {% if cv %}
+            <div class="card shadow-sm border-0 hover-card">
+                <div class="card-header bg-gradient-info text-white rounded-top">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>حالة إكتمال السيرة</h5>
+                </div>
+                <div class="card-body">
+                    {% with complete_percent=cv.completion_percentage %}
+                    <div class="progress mb-4" style="height: 25px;">
+                        <div class="progress-bar bg-success progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: {{ complete_percent }}%" 
+                             aria-valuenow="{{ complete_percent }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                            {{ complete_percent }}%
+                        </div>
+                    </div>
+                    <ul class="list-unstyled">
+                        <li class="mb-3">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <span class="fw-bold">المعلومات الأساسية</span>
+                        </li>
+                        <li class="mb-3">
+                            <i class="fas {% if experiences %}fa-check-circle text-success{% else %}fa-circle text-muted{% endif %} me-2"></i>
+                            <span class="fw-bold">الخبرات العملية</span>
+                            <span class="badge bg-light text-dark ms-2">{{ experiences|length }}</span>
+                        </li>
+                        <li>
+                            <i class="fas {% if educations %}fa-check-circle text-success{% else %}fa-circle text-muted{% endif %} me-2"></i>
+                            <span class="fw-bold">المؤهلات العلمية</span>
+                            <span class="badge bg-light text-dark ms-2">{{ educations|length }}</span>
+                        </li>
+                    </ul>
+                    {% endwith %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- المحتوى الرئيسي -->
+        <div class="col-md-8">
+            {% if cv %}
+                <!-- بطاقة الملخص -->
+                <div class="card shadow-sm mb-4 border-0 hover-card">
+                    <div class="card-header bg-white border-bottom-0">
+                        <h4 class="mb-0 text-primary">{{ cv.title }}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex align-items-start">
+                            <div class="flex-grow-1">
+                                <p class="lead mb-4">{{ cv.summary }}</p>
+                                
+                                <div class="mb-4">
+                                    <h5 class="d-flex align-items-center mb-3">
+                                        <span class="badge bg-primary-lighten text-primary p-2 me-2">
+                                            <i class="fas fa-tools"></i>
+                                        </span>
+                                        المهارات الأساسية
+                                    </h5>
+                                    <div class="mt-3">
+                                        {% for skill in cv.skills_list %}
+                                        <span class="badge bg-light text-dark border me-2 mb-2 p-2">
+                                            <i class="fas fa-check-circle text-success me-1"></i> {{ skill }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="ms-4 text-center">
+                                <div class="avatar avatar-xl mb-3">
+                                    {% if user.profile_image %}
+                                        <img src="{{ user.profile_image.url }}" class="rounded-circle" alt="صورة الملف الشخصي">
+                                    {% else %}
+                                        <div class="avatar-text bg-primary text-white rounded-circle">
+                                            {{ user.first_name|first }}{{ user.last_name|first }}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <h5 class="mb-1">{{ user.get_full_name }}</h5>
+                                <p class="text-muted small mb-0">{{ user.job_title }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- بطاقة الترحيب -->
+                <div class="card shadow-sm border-0 hover-card">
+                    <div class="card-body text-center py-5">
+                        <div class="mb-4">
+                            <i class="fas fa-file-alt display-1 text-primary"></i>
+                        </div>
+                        <h3 class="mb-3">ليس لديك سيرة ذاتية بعد</h3>
+                        <p class="text-muted mb-4">أنشئ سيرتك الذاتية الآن لعرضها للشركات وزيادة فرصك الوظيفية</p>
+                        <a href="{% url 'create_cv' %}" class="btn btn-primary btn-lg px-4">
+                            <i class="fas fa-plus me-2"></i> إنشاء سيرة ذاتية جديدة
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- قسم الخبرات -->
+            {% if experiences %}
+            <div class="card shadow-sm mb-4 border-0 hover-card">
+                <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-briefcase text-warning me-2"></i> الخبرات العملية
+                    </h4>
+
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for exp in experiences %}
+                        <div class="timeline-item {% if forloop.last %}last{% endif %}">
+                            <div class="timeline-badge bg-warning">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="timeline-card">
+                                <div class="timeline-header">
+                                    <h5 class="mb-1">{{ exp.job_title }}</h5>
+                                    <span class="text-muted">{{ exp.company }}</span>
+                                </div>
+                                <div class="timeline-date mb-2">
+                                    {{ exp.start_date|date:"Y-m-d" }} - 
+                                    {% if exp.currently_working %}
+                                    <span class="badge bg-success">حتى الآن</span>
+                                    {% else %}
+                                    {{ exp.end_date|date:"Y-m-d" }}
+                                    {% endif %}
+                                </div>
+                                <div class="timeline-content mb-3">
+                                    <p class="mb-0">{{ exp.description }}</p>
+                                </div>
+                                <div class="timeline-actions">
+                                    <a href="#" class="btn btn-sm btn-outline-primary me-2">تعديل</a>
+                                    <a href="#" class="btn btn-sm btn-outline-danger">حذف</a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- قسم التعليم -->
+            {% if educations %}
+            <div class="card shadow-sm border-0 hover-card">
+                <div class="card-header bg-white border-bottom-0 d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">
+                        <i class="fas fa-graduation-cap text-info me-2"></i> المؤهلات العلمية
+                    </h4>
+     
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        {% for edu in educations %}
+                        <div class="col-md-6">
+                            <div class="education-card p-4 h-100">
+                                <div class="d-flex align-items-start">
+                                    <div class="edu-icon me-3">
+                                        <i class="fas fa-university text-info fs-2"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-2">{{ edu.degree }}</h5>
+                                        <p class="text-muted mb-2">{{ edu.institution }}</p>
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-book-open me-1"></i> {{ edu.field_of_study }}
+                                        </p>
+                                        <p class="text-muted mb-0">
+                                            <i class="fas fa-calendar-alt me-1"></i>
+                                            {{ edu.start_date|date:"Y" }} - 
+                                            {% if edu.currently_studying %}
+                                            <span class="badge bg-success">حتى الآن</span>
+                                            {% else %}
+                                            {{ edu.end_date|date:"Y" }}
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal تصدير السيرة الذاتية -->
+<div class="modal fade" id="exportModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">تصدير السيرة الذاتية</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-grid gap-3">
+                    <a href="#" class="btn btn-danger btn-lg">
+                        <i class="fas fa-file-pdf me-2"></i> PDF
+                    </a>
+                    <a href="#" class="btn btn-primary btn-lg">
+                        <i class="fas fa-file-word me-2"></i> Word
+                    </a>
+                    <a href="#" class="btn btn-success btn-lg">
+                        <i class="fas fa-file-alt me-2"></i> نص عادي
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #0d6efd;
+        --info-color: #17a2b8;
+        --warning-color: #ffc107;
+        --success-color: #28a745;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(45deg, var(--primary-color), #0a58ca);
+    }
+
+    .bg-gradient-info {
+        background: linear-gradient(45deg, var(--info-color), #138496);
+    }
+
+    .card {
+        border-radius: 15px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .hover-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+
+    .progress {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+
+    .timeline-item {
+        position: relative;
+        padding-bottom: 30px;
+    }
+
+    .timeline-item.last {
+        padding-bottom: 0;
+    }
+
+    .timeline-badge {
+        position: absolute;
+        left: -45px;
+        top: 0;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .timeline-card {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-left: 4px solid var(--warning-color);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .education-card {
+        background: #f8f9fa;
+        border-radius: 10px;
+        border-left: 4px solid var(--info-color);
+        transition: all 0.3s ease;
+    }
+
+    .education-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .avatar {
+        position: relative;
+        display: inline-block;
+    }
+
+    .avatar-xl {
+        width: 120px;
+        height: 120px;
+    }
+
+    .avatar-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    .bg-primary-lighten {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+
+    .list-group-item {
+        transition: all 0.3s ease;
+    }
+
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+        transform: translateX(-5px);
+    }
+
+    .btn {
+        border-radius: 8px;
+        padding: 8px 16px;
+        transition: all 0.3s ease;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    .badge {
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-weight: 500;
+    }
+
+    .profile-header {
+        position: relative;
+    }
+
+    .profile-image-container {
+        display: inline-block;
+        text-align: center;
+    }
+
+    .profile-image-wrapper {
+        position: relative;
+        width: 150px;
+        height: 150px;
+        margin: 0 auto;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        border: 4px solid white;
+    }
+
+    .profile-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .profile-image-placeholder {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, var(--primary-color), #0a58ca);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 4rem;
+    }
+
+    .profile-image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .profile-image-wrapper:hover .profile-image-overlay {
+        opacity: 1;
+    }
+
+    .profile-image-wrapper:hover .profile-image {
+        transform: scale(1.1);
+    }
+</style>
+{% endblock %}
